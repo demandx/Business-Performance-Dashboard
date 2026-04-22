@@ -1,4 +1,4 @@
-# Business-Performance-Dashboard
+# Business Performance Dashboard
 Project Overview
 This project builds an end-to-end business performance reporting solution for a manufacturing company's quarterly business review. The CFO and COO need a single, unified view of business health across Sales, Cost, and Operations — one that tells them where they are vs. budget, where the risks are, and what decisions need to be made.
 The solution delivers a 3-page interactive Power BI dashboard backed by a Python preprocessing pipeline that takes raw financial data from Excel, cleans and transforms it, and loads it into a boardroom-ready reporting layer.
