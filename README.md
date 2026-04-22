@@ -1,121 +1,263 @@
 # Business Performance Dashboard
-Project Overview
+### Power BI · Python · DAX · Excel
+*CFO & COO-Ready Financial Intelligence | Budget vs Actual | Cost Variance | Operational KPIs*
+
+---
+
+## Project Overview
+
 This project builds an end-to-end business performance reporting solution for a manufacturing company's quarterly business review. The CFO and COO need a single, unified view of business health across Sales, Cost, and Operations — one that tells them where they are vs. budget, where the risks are, and what decisions need to be made.
-The solution delivers a 3-page interactive Power BI dashboard backed by a Python preprocessing pipeline that takes raw financial data from Excel, cleans and transforms it, and loads it into a boardroom-ready reporting layer.
 
-Business Problem
+The solution delivers a **3-page interactive Power BI dashboard** backed by a **Python preprocessing pipeline** that takes raw financial data from Excel, cleans and transforms it into a structured, analytics-ready layer for boardroom reporting.
+
+---
+
+## Business Problem
+
 Most manufacturing businesses run their quarterly reviews on static Excel files passed between teams — no single version of truth, no drill-through capability, no real-time variance flagging. Leadership spends the first 30 minutes of every review reconciling numbers instead of making decisions.
-This dashboard solves that by consolidating all performance data into one governed, interactive reporting layer — so the first slide of every QBR is already answered before the meeting starts.
 
-Solution Architecture
-Raw Data (Excel)
-      ↓
-Python Preprocessing Pipeline (Pandas)
-      ↓
-Cleaned & Structured Dataset (.csv)
-      ↓
-Power BI Data Model (DAX Measures)
-      ↓
-3-Page Interactive Dashboard
-      ↓
-CFO / COO Quarterly Business Review
+This dashboard solves that by consolidating all performance data into one governed, interactive reporting layer — so the first question of every QBR is already answered before the meeting starts.
 
-Dashboard Pages
-Page 1 — Executive Summary (CFO View)
-The single-screen answer to "how is the business performing?"
+---
 
-Revenue vs Budget KPI card with variance % and trend arrow
-EBITDA Margin card vs prior year and target
-Cost Variance card — over/under budget flagged RAG
-Working Capital card
-Waterfall chart: Budget → Actuals → Variance by business unit
-Month-on-month revenue and cost trend lines
+## Solution Architecture
 
-Page 2 — Sales & Revenue Deep Dive
-Answers: where is revenue coming from and where is it at risk?
+```
+Raw Data (financial_sample.xlsx)
+            ↓
+  generate_data.py
+  [Simulates 1,200 manufacturing transactions across
+   segments, products, business units, customers]
+            ↓
+  preprocessing.py
+  [Cleans, transforms, engineers 45 analytical features]
+            ↓
+  output/cleaned_financial_data.csv
+            ↓
+  Power BI Desktop (financial_dashboard.pbix)
+  [DAX measures + 3-page interactive report]
+            ↓
+  CFO / COO Quarterly Business Review
+```
 
-Revenue by region and product category (bar + map visual)
-Top 10 vs Bottom 10 SKUs by contribution margin
-Sales growth % vs prior year by segment
-Customer concentration — top 5 customers as % of total revenue
-Month-to-date vs target tracker with forecast line
+---
 
-Page 3 — Cost & Operational Efficiency
-Answers: where are costs running hot and what is the operational impact?
+## Project Structure
 
-Cost breakdown by function (production, logistics, overhead, labour)
-Production cost per unit — 12-month trend
-Headcount vs output ratio by business unit
-Downtime hours and estimated revenue impact
-Budget vs actual cost variance heatmap by month and category
+```
+business-performance-dashboard/
+│
+├── data/
+│   └── financial_sample.xlsx        # Raw simulated dataset (1,200 rows)
+│
+├── output/
+│   └── cleaned_financial_data.csv   # Pipeline output → load into Power BI
+│
+├── charts/
+│   └── dashboard_preview.png        # Python-rendered MI dashboard preview
+│
+├── generate_data.py                 # Simulates realistic manufacturing financial data
+├── preprocessing.py                 # Full ETL pipeline (7-step, 45 features)
+├── dashboard_analytics.py           # Python dashboard preview (validates Power BI logic)
+├── dax_measures.dax                 # All Power BI DAX measures (copy-paste ready)
+├── requirements.txt
+└── README.md
+```
 
-Key DAX Measures
+---
+
+## Dashboard Pages
+
+### Page 1 — Executive Summary (CFO View)
+*The single-screen answer to "how is the business performing?"*
+
+| Visual | What It Shows |
+|--------|--------------|
+| KPI Card | Revenue vs Budget with variance % and RAG flag |
+| KPI Card | EBITDA Margin vs prior year and target |
+| KPI Card | Cost Variance — over/under budget (RAG coded) |
+| KPI Card | Working Capital proxy |
+| Waterfall Chart | Budget → Actuals → Variance by business unit |
+| Line Chart | Month-on-month revenue and cost trend |
+
+### Page 2 — Sales & Revenue Deep Dive
+*Answers: where is revenue coming from and where is it at risk?*
+
+| Visual | What It Shows |
+|--------|--------------|
+| Bar + Map | Revenue by country and product segment |
+| Ranked Bar | Top 10 vs Bottom 5 SKUs by gross margin % |
+| Line Chart | Sales growth % vs prior year by segment |
+| Donut | Customer concentration — top 5 as % of total |
+| MTD Tracker | Month-to-date vs target with forecast line |
+
+### Page 3 — Cost & Operational Efficiency
+*Answers: where are costs running hot and what is the operational impact?*
+
+| Visual | What It Shows |
+|--------|--------------|
+| Pie Chart | Cost breakdown by function (Production/Logistics/Labour/Overhead/R&D) |
+| Bar + Line | Production cost per unit — 12-month trend |
+| Column | Headcount vs output ratio by business unit |
+| KPI Card | Total downtime hours and estimated revenue impact |
+| Heatmap | Budget vs actual cost variance by month and category |
+
+---
+
+## Python Preprocessing Pipeline
+
+The pipeline (`preprocessing.py`) runs 7 steps and engineers **45 analytical features** from 20 raw columns:
+
+### Step-by-Step
+
+| Step | What Happens |
+|------|-------------|
+| 1. Ingest | Load raw Excel, log shape |
+| 2. Standardise | Normalise all column names |
+| 3. Date Engineering | Parse dates → year, month, quarter, fiscal_quarter, month_year, week |
+| 4. Null Handling | Fill nulls with medians / zeros; log before vs after |
+| 5. Feature Engineering | Compute margin %, budget variance, cost variance, cost per unit, RAG flags |
+| 6. Customer Concentration | Compute top 5 / top 2 customer revenue share |
+| 7. Export | Save to `output/cleaned_financial_data.csv` |
+
+### Key Engineered Features
+
+```python
+# Margin metrics
+gross_margin_pct      = (sales - cogs) / sales * 100
+ebitda_margin_pct     = ebitda / sales * 100
+
+# Budget & cost variance
+budget_variance       = sales - budget
+budget_variance_pct   = budget_variance / budget * 100
+budget_status         = "Over Budget" | "On Track"
+
+cost_variance         = cost_actual - cost_budget
+cost_variance_pct     = cost_variance / cost_budget * 100
+
+# Operational efficiency
+cost_per_unit         = cost_actual / units_produced
+revenue_per_head      = sales / headcount
+output_per_head       = units_produced / headcount
+downtime_revenue_loss = downtime_hours * (sales / 8)
+
+# RAG flags
+margin_rag            = GREEN (≥30%) | AMBER (≥20%) | RED (<20%)
+cost_rag              = GREEN (≤5%)  | AMBER (≤10%) | RED (>10%)
+downtime_rag          = GREEN (<8h)  | AMBER (<16h) | RED (≥16h)
+```
+
+---
+
+## DAX Measures (Power BI)
+
+All measures are in `dax_measures.dax`. Key ones:
+
+```dax
 Revenue vs Budget % =
 DIVIDE([Total Revenue] - [Total Budget], [Total Budget], 0)
 
-EBITDA Margin =
-DIVIDE([EBITDA], [Total Revenue], 0)
+EBITDA Margin % =
+DIVIDE([Total EBITDA], [Total Revenue], 0)
 
 Cost Variance =
-[Actual Cost] - [Budgeted Cost]
+[Total Cost Actual] - [Total Cost Budget]
 
 MoM Revenue Growth =
-DIVIDE([Revenue This Month] - [Revenue Last Month], [Revenue Last Month], 0)
+VAR CurrentMonth = MAX(financials[date])
+VAR PrevMonth    = EDATE(CurrentMonth, -1)
+...
+RETURN DIVIDE(RevCurrent - RevPrev, RevPrev, 0)
 
 Customer Concentration % =
 DIVIDE([Top 5 Customer Revenue], [Total Revenue], 0)
 
-Python Preprocessing Pipeline
-The raw Microsoft Financial Sample dataset requires cleaning before Power BI ingestion. The Python pipeline handles:
+Margin RAG =
+IF(M >= 30, "🟢 GREEN", IF(M >= 20, "🟡 AMBER", "🔴 RED"))
+```
 
-Column standardisation and renaming
-Date parsing and fiscal quarter tagging
-Null handling and outlier flagging
-Margin and variance calculations pre-computed as features
-Export to clean .csv for Power BI direct query
+---
 
-import pandas as pd
+## Key Business Insights Delivered
 
-df = pd.read_excel("financial_sample.xlsx")
+- **Budget variance identified by unit** — dashboard surfaces which business unit drives overrun, not just the total
+- **SKU-level margin drag** — bottom 3 SKUs flagged as margin-negative, enabling product mix decisions
+- **Customer concentration risk** — top 5 customers = ~29% of revenue; top 2 = ~13%; risk visible at a glance
+- **Cost per unit trend** — 8%+ increase over 6 months with flat headcount flags a process efficiency problem before it becomes a P&L problem
+- **Downtime impact quantified** — estimated revenue loss from downtime converted to ₹ Cr, making the operational case for maintenance investment
 
-# Standardise columns
-df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+---
 
-# Parse dates
-df["date"] = pd.to_datetime(df["date"])
-df["fiscal_quarter"] = df["date"].dt.to_period("Q")
+## Pipeline Output Summary (Sample Run)
 
-# Pre-compute key metrics
-df["gross_margin"] = (df["sales"] - df["cogs"]) / df["sales"]
-df["budget_variance"] = df["sales"] - df["budget"]
-df["variance_pct"] = df["budget_variance"] / df["budget"]
+```
+Revenue
+  Total Revenue      : ₹215.03 Cr
+  Total Budget       : ₹214.80 Cr
+  Budget Variance    : ₹0.23 Cr  (+0.1%)
 
-# Flag over-budget lines
-df["cost_flag"] = df["budget_variance"].apply(
-    lambda x: "Over Budget" if x < 0 else "On Track"
-)
+Profitability
+  Avg Gross Margin   : 41.9%
+  Avg EBITDA Margin  : 25.8%
+  Total EBITDA       : ₹55.24 Cr
 
-df.to_csv("cleaned_financial_data.csv", index=False)
-print("Pipeline complete. Rows processed:", len(df))
+Cost Health
+  Over-Budget Lines  : 583 of 1,200 (48.6%)
+  Cost RED lines     : 157 transactions
 
-Dataset
-Source: Microsoft Power BI Financial Sample (official, free)
-Download: Microsoft Power BI documentation page → Sample datasets → Financial Sample
-Format: Excel (.xlsx) — 700 rows, 16 columns covering Sales, COGS, Budget, Profit, Segment, Country, Product, and Date
+Operational
+  Total Downtime     : 14,561 hrs
+  Est. Revenue Loss  : ₹328.02 Cr
+  Customer Conc.     : Top 5 = 29.4% | Top 2 = 12.6%
+```
 
-Tools & Methods
-AreaToolData preprocessingPython — PandasDashboard & visualisationPower BI DesktopDAX modellingPower BI DAXSource dataMicrosoft Financial Sample (Excel)MethodologyManagement reporting, variance analysis, KPI framework design
+---
 
-Key Business Insights Delivered
+## How to Run
 
-Identified which business unit was responsible for 73% of total budget overrun
-Flagged 3 underperforming SKUs contributing negative margin drag
-Showed customer concentration risk — top 2 customers = 41% of revenue
-Demonstrated that production cost per unit increased 8% over 6 months despite flat headcount — signalling a process efficiency issue
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
 
-How to Run
-1. Download financial_sample.xlsx from Microsoft Power BI docs
-2. Run: python preprocessing.py
-3. Open financial_dashboard.pbix in Power BI Desktop
-4. Refresh data source → point to cleaned_financial_data.csv
-5. All visuals update automatically
+# 2. Generate dataset
+python generate_data.py
+
+# 3. Run preprocessing pipeline
+python preprocessing.py
+
+# 4. Generate Python dashboard preview
+python dashboard_analytics.py
+
+# 5. Load into Power BI
+#    → Open Power BI Desktop
+#    → Get Data → Text/CSV → output/cleaned_financial_data.csv
+#    → Create measures from dax_measures.dax
+#    → Build 3-page report using the dashboard structure above
+```
+
+---
+
+## Tools & Methods
+
+| Area | Tool / Method |
+|------|--------------|
+| Data generation | Python — NumPy, Pandas |
+| ETL pipeline | Python — Pandas (7-step, 45 features) |
+| Dashboard & BI | Power BI Desktop |
+| DAX modelling | Power BI DAX |
+| Python dashboard preview | Matplotlib |
+| Methodology | Management reporting, variance analysis, KPI framework design, RAG reporting |
+
+---
+
+## Dataset
+
+- **Source:** Simulated manufacturing financial data (mirrors Microsoft Financial Sample structure)
+- **Rows:** 1,200 transactions
+- **Period:** Jan 2023 – Dec 2024 (8 fiscal quarters)
+- **Dimensions:** Segment, Product, Country, Customer, Business Unit, Cost Function
+- **Measures:** Sales, COGS, EBITDA, Budget, Cost Actual, Cost Budget, Downtime, Headcount, Units Produced
+
+---
+
+*Project: Business Performance Dashboard | Manufacturing Financial Analytics | Power BI + Python*
